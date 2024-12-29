@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elpitiya Division - Vehicle Management</title>
+    <link rel="icon" href="logo.jpg" type="image/png">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="main.css">
+
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <!-- DOMPurify for sanitizing user input -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.4.0/purify.min.js" crossorigin="anonymous"></script>
+    <!-- icons -->
+    <script src='https://kit.fontawesome.com/a076d05399.js' crossorigin='anonymous'></script>
+    <!-- Include Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <script src="mainheader.js"></script>
+    <!-- Firebase SDK (v9 Modular) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getDatabase, ref, push, onValue, update, remove, serverTimestamp, get } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        $(document).ready(function () {
+            const listFormRef = ref(db, 'list_form/');
+
+            // Add search functionality
+            $('#searchInput').on('keyup', function() {
+                const searchValue = $(this).val().toLowerCase();
+                $('table tbody tr').filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(searchValue) > -1);
+                });
+            });
+
+            function sanitizeInput(input) {
+                return DOMPurify.sanitize(input);
+            }
+
+            // Display vehicles in table
+            onValue(listFormRef, (snapshot) => {
+                const tbodyEl = $('tbody');
+                tbodyEl.empty();
+                let count = 0;
+                snapshot.forEach((childSnapshot) => {
+                    count += 1;
+                    const vehicle = childSnapshot.val();
+                    const vehicleId = childSnapshot.key;
+                    const vehiclenumber = sanitizeInput(vehicle.vehiclenumber);
+                    const policestation = sanitizeInput(vehicle.policestation);
+                    const lostdate = sanitizeInput(vehicle.lostdate);
+
+                    const itemStr = [...Object.values(vehicle), count].join(' ');
+
+                    tbodyEl.append(`
+                        <tr data-item="${itemStr}" >
+                            <td>${count}</td>
+                            <td><input type="text" class="form-control"  value="${vehiclenumber}" readonly></td>
+                            <td><input type="text" class="form-control"  value="${lostdate}" readonly></td>
+                            <td><input type="text" class="form-control"  value="${policestation}" readonly></td>
+                            <td>
+                                <button class="btn btn-warning edit" data-id="${vehicleId}">
+                                    <i class="bi bi-pencil-square"></i> Edit
+                                </button>
+                                <button class="btn btn-danger delete" data-id="${vehicleId}">
+                                    <i class="bi bi-trash me-1"></i> Delete
+                                </button>
+                            </td>
+                        </tr>
+                    `);
+                });
+            });
+
+            // Editing vehicle using modal
+            $(document).on('click', '.edit', function() {
+                const vehicleId = $(this).data('id');
+                console.log('Edit clicked for vehicle:', vehicleId);
+                
+                if (!vehicleId) {
+                    console.error('No vehicle ID found');
+                    alert('Error: Could not find vehicle ID');
+                    return;
+                }
+
+                const vehicleRef = ref(db, `list_form/${vehicleId}`);
+                
+                // Get current values from Firebase
+                get(vehicleRef).then((snapshot) => {
+                    if (snapshot.exists()) {
+                        const vehicle = snapshot.val();
+                        console.log('Vehicle data:', vehicle);
+                        
+                        // Set form values
+                        $('#editId').val(vehicleId);
+                        $('#editvehiclenumber').val(vehicle.vehiclenumber || '');
+                        $('#editpolicestation').val(vehicle.policestation || '');
+                        $('#editlostdate').val(vehicle.lostdate || '');
+                        $('#editEngineNumber').val(vehicle.EngineNumber || '');
+                        $('#editChassisNumber').val(vehicle.ChassisNumber || '');
+                        $('#editdescription').val(vehicle.description || '');
+                        $('#editvehicalTypeDropdown').val(vehicle.vehicalTypeDropdown || 'Other');
+                        $('#editemergencyDropdown').val(vehicle.emergencyDropdown || 'සාමාන්‍ය');
+                        
+                        // Show modal
+                        $('#editModal').modal('show');
+                    } else {
+                        console.error('No vehicle found with ID:', vehicleId);
+                        alert('Error: Vehicle not found');
+                    }
+                }).catch((error) => {
+                    console.error('Error fetching vehicle:', error);
+                    alert('Error loading vehicle data: ' + error.message);
+                });
+            });
+
+            // Updating vehicle
+            $('#editForm').submit(function(e) {
+                e.preventDefault();
+                
+                const vehicleId = $('#editId').val();
+                if (!vehicleId) {
+                    alert('Error: No vehicle ID found');
+                    return;
+                }
+
+                const vehicleRef = ref(db, `list_form/${vehicleId}`);
+                
+                const updates = {
+                    vehiclenumber: sanitizeInput($('#editvehiclenumber').val().trim()),
+                    policestation: sanitizeInput($('#editpolicestation').val().trim()),
+                    lostdate: sanitizeInput($('#editlostdate').val().trim()),
+                    EngineNumber: sanitizeInput($('#editEngineNumber').val().trim()),
+                    ChassisNumber: sanitizeInput($('#editChassisNumber').val().trim()),
+                    description: sanitizeInput($('#editdescription').val().trim()),
+                    vehicalTypeDropdown: sanitizeInput($('#editvehicalTypeDropdown').val()),
+                    emergencyDropdown: sanitizeInput($('#editemergencyDropdown').val()),
+                    updated_at: serverTimestamp()
+                };
+
+                update(vehicleRef, updates)
+                    .then(() => {
+                        alert('Vehicle updated successfully!');
+                        $('#editModal').modal('hide');
+                    })
+                    .catch((error) => {
+                        console.error('Error updating vehicle:', error);
+                        alert('Error updating vehicle: ' + error.message);
+                    });
+            });
+
+            // Adding a new vehicle
+            $('#form').submit(function (e) {
+                e.preventDefault();
+                
+                const vehiclevehiclenumber = sanitizeInput($('#vehiclenumber').val());
+                const vehiclepolicestation = sanitizeInput($('#policestation').val());
+                const vehiclelostdate = sanitizeInput($('#lostdate').val());
+                const vehicleEngineNumber = sanitizeInput($('#EngineNumber').val()) || 'N/A';
+                const vehicleChassisNumber = sanitizeInput($('#ChassisNumber').val()) || 'N/A';
+                const vehicledescription = sanitizeInput($('#description').val()) || 'N/A';
+                const vehiclevehicalTypeDropdown = sanitizeInput($('#vehicalTypeDropdown').val()) || 'Other';
+                const vehicleemergencyDropdown = sanitizeInput($('#emergencyDropdown').val()) || 'සාමාන්‍ය';
+
+                if (!vehiclevehiclenumber || !vehiclepolicestation || !vehiclelostdate) {
+                    alert('Please fill in all required fields');
+                    return;
+                }
+
+                const newVehicle = {
+                    id: Date.now().toString(),
+                    vehiclenumber: vehiclevehiclenumber,
+                    policestation: vehiclepolicestation,
+                    lostdate: vehiclelostdate,
+                    EngineNumber: vehicleEngineNumber,
+                    ChassisNumber: vehicleChassisNumber,
+                    description: vehicledescription,
+                    vehicalTypeDropdown: vehiclevehicalTypeDropdown,
+                    emergencyDropdown: vehicleemergencyDropdown,
+                    timestamp: serverTimestamp()
+                };
+
+                // Push the new vehicle to Firebase
+                push(listFormRef, newVehicle);
+
+                // Reset form
+                this.reset();
+                $('#vehicalTypeDropdown').val('Other');
+                $('#emergencyDropdown').val('සාමාන්‍ය');
+            });
+
+            function addVehicle(vehiclevehiclenumber, vehiclepolicestation, vehiclelostdate, vehicleEngineNumber, vehicleChassisNumber, vehicledescription, vehiclevehicalTypeDropdown, vehicleemergencyDropdown) {
+                const newPostRef = push(ref(db, 'list_form'));
+                const user = {
+                    id: newPostRef.key,
+                    created_at: serverTimestamp(),
+                    vehiclenumber: vehiclevehiclenumber,
+                    policestation: vehiclepolicestation,
+                    lostdate: vehiclelostdate,
+                    ChassisNumber: vehicleChassisNumber,
+                    EngineNumber: vehicleEngineNumber,
+                    description: vehicledescription,
+                    vehicalTypeDropdown: vehiclevehicalTypeDropdown,
+                    emergencyDropdown: vehicleemergencyDropdown
+                };
+                update(newPostRef, user)
+                    .then(() => alert('Vehicle added successfully!'))
+                    .catch((error) => console.error('Error adding vehicle:', error));
+            }
+
+            // Delete vehicle functionality
+            let deleteVehicleId = null;
+
+            // Set up delete button click event
+            $('table').on('click', '.delete', function() {
+                deleteVehicleId = $(this).data('id');
+                if (deleteVehicleId) {
+                    $('#deleteModal').modal('show');
+                } else {
+                    alert('Error: Could not find vehicle ID');
+                }
+            });
+
+            // Delete confirmation
+            $('#confirmDelete').click(function() {
+                if (!deleteVehicleId) {
+                    alert('Error: No vehicle selected for deletion');
+                    return;
+                }
+
+                const vehicleRef = ref(db, `list_form/${deleteVehicleId}`);
+                
+                remove(vehicleRef)
+                    .then(() => {
+                        alert('Vehicle deleted successfully!');
+                        $('#deleteModal').modal('hide');
+                        deleteVehicleId = null;
+                    })
+                    .catch((error) => {
+                        console.error('Error deleting vehicle:', error);
+                        alert('Error deleting vehicle: ' + error.message);
+                    });
+            });
+
+            // Search Functionality
+            $("#searchInput").on("keyup", function () {
+                const value = $(this).val().toLowerCase();
+                $("table tbody tr").filter(function () {
+                    const rowText = $(this).data('item').toLowerCase();
+                    $(this).toggle(rowText.indexOf(value) > -1);
+                });
+            });
+        });
+    </script>
+    <style>
+        .dropdown-item i {
+            margin-right: 5px;
+
+            /* Space between icon and text */
+        }
+    </style>
+
+
+
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <div class="row" id="header">
+            <div class="colum">
+                <img src="logo.jpg" alt="logo">
+            </div>
+            <div class="colum">
+                <h1 class="h1">Elpitiya Divisions</h1>
+                <h2 class="h2">Vehicle Management System</h2>
+            </div>
+            <div class="colum">
+                <a href="index.html">
+                    <button><i class="fas fa-sign-out-alt"></i> Logout</button>
+                </a>
+            </div>
+        </div>
+
+        <!-- Form Section -->
+        <div class="row" id="formdiv">
+            <h2>Add New Wanted Vehicle</h2>
+            <form id="form" class="form row inline ">
+                <!-- Vehicle Number Field -->
+                <div class="form-group mx-sm-3 mb-2">
+                    <label for="vehiclenumber">වාහන අංකය :</label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="fas fa-car"></i></span>
+                        </div>
+                        <input type="text" class="form-control" id="vehiclenumber" placeholder="වාහන අංකය :-" required>
+                    </div>
+                </div>
+
+                <!-- Missing Date Field -->
+                <div class="form-group mx-sm-3 mb-2">
+                    <label for="lostdate">නැති වූ දිනය :</label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                        </div>
+                        <input type="text" class="form-control" id="lostdate" placeholder="නැති වූ දිනය :-" required>
+                    </div>
+                </div>
+
+                <!-- Police Station Field -->
+                <div class="form-group mx-sm-3 mb-2">
+                    <label for="policestation">පොලිස් ස්ථානය :</label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="fas fa-building"></i></span>
+                        </div>
+                        <input type="text" class="form-control" id="policestation" name="todo" placeholder="පොලිස් ස්ථානය :-"
+                            required>
+                    </div>
+                </div>
+
+                <!-- Engine Number Field -->
+                <div class="form-group">
+                    <label for="EngineNumber">එන්ජින් අංකය :</label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="fas fa-cog"></i></span>
+                        </div>
+                        <input type="text" class="form-control" id="EngineNumber" name="EngineNumber"
+                            placeholder="එන්ජින් අංකය :-">
+                    </div>
+                </div>
+
+
+                <!-- Chassis Number Field -->
+                <div class="form-group mx-sm-3 mb-2">
+                    <label for="ChassisNumber">චැසි අංකය :</label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="fas fa-cog"></i></span>
+                        </div>
+                        <input type="text" class="form-control" id="ChassisNumber" name="ChassisNumber"
+                            placeholder="චැසි අංකය :-" >
+                    </div>
+                </div>
+
+                <!-- Description Field -->
+                <div class="form-group mx-sm-3 mb-2">
+                    <label for="description">විස්තරය :</label>
+                    <div class="input-group">
+                        <textarea class="form-control" id="description" name="description"
+                            placeholder="විස්තරය :-"></textarea>
+                    </div>
+                </div>
+
+                <!-- Vehicle Type Dropdown -->
+                <div class="form-group mx-sm-3 mb-2">
+                    <label for="vehicalTypeDropdown">
+                        <i class="fas fa-car"></i> වාහන වර්ගය :
+                    </label>
+                    <select class="form-control custom-dropdown" id="vehicalTypeDropdown" style="background-color: rgb(240, 240, 240);">
+                        <option value="car">🚗 Car</option>
+                        <option value="bus">🚌 Bus</option>
+                        <option value="van">🚐 Van</option>
+                        <option value="truck">🚚 Truck</option>
+                        <option value="motorcycle">🏍️ Motorcycle</option>
+                        <option value="scooter">🛵 Scooter</option>
+                        <option value="number-plate">🔢 Number Plate</option>
+                        <option value="other" selected>🔘 Other</option>
+                    </select>
+                </div>
+
+                <!-- Emergency Dropdown -->
+                <div class="form-group mx-sm-3 mb-2">
+                    <label for="emergencyDropdown">
+                        <i class="fas fa-exclamation-circle"></i> හදිසි අවශ්‍යතා :
+                    </label>
+                    <select class="form-control custom-dropdown" id="emergencyDropdown" style="background-color: rgb(240, 240, 240);">
+                        <option value="normal" selected>✅ සාමාන්‍ය</option>
+                        <option value="urgent">⚠️ ඉතා හදිසි</option>
+                    </select>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" name="Add" id="add" value="add" class="btn btn-primary">
+                    <i class="fas fa-car"></i> ADD VEHICLE
+                </button>
+            </form>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="row" id="search">
+            <h2>Search Vehicle</h2>
+            <div class="col-md-12 text-center">
+                <input type="text" id="searchInput" class="form-control" placeholder="Search Vehicle...">
+            </div>
+        </div>
+
+        <!-- Vehicle Table -->
+        <div class="row" id="table">
+            <h2>Wanted Vehicles</h2>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>අනු අංක</th>
+                        <th>වාහන අංකය</th>
+                        <th>නැති වූ දිනය</th>
+                        <th>පොලිස් ස්ථානය</th>
+                        <th>Manage</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- Edit Modal -->
+        <div class="modal fade" id="editModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="fas fa-edit"></i> Edit Vehicle Details</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="editForm">
+                            <input type="hidden" id="editId">
+                            <div class="form-group">
+                                <label for="editvehiclenumber">වාහන අංකය:</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-car"></i></span>
+                                    </div>
+                                    <input type="text" class="form-control" id="editvehiclenumber" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="editlostdate">නැති වූ දිනය:</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                                    </div>
+                                    <input type="text" class="form-control" id="editlostdate" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="editpolicestation">පොලිස් ස්ථානය:</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-building"></i></span>
+                                    </div>
+                                    <input type="text" class="form-control" id="editpolicestation" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="editEngineNumber">එන්ජින් අංකය:</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-cog"></i></span>
+                                    </div>
+                                    <input type="text" class="form-control" id="editEngineNumber">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="editChassisNumber">චැසි අංකය:</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-cog"></i></span>
+                                    </div>
+                                    <input type="text" class="form-control" id="editChassisNumber">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="editdescription">විස්තරය:</label>
+                                <div class="input-group">
+                                    <textarea class="form-control" id="editdescription"></textarea>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="editvehicalTypeDropdown">වාහන වර්ගය:</label>
+                                <select class="form-control" id="editvehicalTypeDropdown">
+                                    <option value="car">Car</option>
+                                    <option value="bus">Bus</option>
+                                    <option value="van">Van</option>
+                                    <option value="truck">Truck</option>
+                                    <option value="motorcycle">Motorcycle</option>
+                                    <option value="scooter">Scooter</option>
+                                    <option value="number-plate">Number Plate</option>
+                                    <option value="other" selected>Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="editemergencyDropdown">හදිසි අවශ්‍යතා:</label>
+                                <select class="form-control" id="editemergencyDropdown">
+                                    <option value="urgent">ඉතා හදිසි</option>
+                                    <option value="normal" selected>සාමාන්‍ය</option>
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" form="editForm" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Modal -->
+        <div class="modal fade" id="deleteModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="fas fa-trash"></i> Delete Vehicle</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure you want to delete this vehicle? This action cannot be undone.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-danger" id="confirmDelete">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <Script>
+        $(document).ready(function () {
+            // Vehicle Type Dropdown handler
+            $('#vehicalTypeDropdown + .dropdown-menu .dropdown-item').on('click', function (e) {
+                e.preventDefault();
+                const selectedText = $(this).text().trim();
+                $('#vehicalTypeDropdown').text(selectedText);
+            });
+
+            // Status Dropdown handler
+            $('#statusDropdown + .dropdown-menu .dropdown-item').on('click', function (e) {
+                e.preventDefault();
+                const selectedText = $(this).text().trim();
+                $('#statusDropdown').text(selectedText);
+            });
+        });
+
+    </Script>
+    <Script>
+        $(document).ready(function () {
+            // Vehicle Type Dropdown handler
+            $('.dropdown-item').on('click', function () {
+                var dropdownButton = $(this).closest('.dropdown').find('.dropdown-toggle');
+                var value = $(this).data('value');
+                var text = $(this).text().trim();
+                dropdownButton.text(text);
+                dropdownButton.val(value);
+            });
+        });
+
+    </Script>
+</body>
+
+</html>

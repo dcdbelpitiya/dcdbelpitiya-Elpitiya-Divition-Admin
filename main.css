@@ -1,0 +1,247 @@
+.container {
+    margin-top: 10px;
+    max-width: 95%;
+    padding: 20px;
+    border-radius: 5px;
+}
+
+.row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f9f9f9;
+    padding: 15px 30px;
+    border-radius: 5px;
+}
+
+/* Optional: Style for modals to ensure consistent icon sizes */
+.modal-title i {
+    font-size: 1.2em;
+    margin-right: 8px;
+    color: #eb242a;
+}
+
+.modal-header {
+    background-color: #65b0ed;
+    border-bottom: 2px solid #1a48c5;
+}
+
+.modal-body {
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-bottom: 2px solid #6585dc;
+}
+
+.modal-footer {
+    background-color: #dbdbdb;
+    border-top: 2px solid #0d3dc2;
+}
+
+.modal-content {
+    border-radius: 5px;
+}
+
+.modal-dialog {
+    max-width: 600px;
+}
+
+/* header style */
+
+.colum {
+    flex: 1;
+    text-align: center;
+}
+
+.colum img {
+    max-width: 120px;
+    /* Adjust logo size */
+    height: auto;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #eb242a;
+    font-weight: bold;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #d14b1f;
+}
+
+#header {
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f9f9f9bc;
+    padding: 15px 30px;
+    border-radius: 5px;
+    border-bottom: 2px solid #2459eb;
+}
+
+#header h1 {
+    font-size: 40px;
+    margin: 0;
+    color: #343a40;
+}
+
+#header h2 {
+    font-size: 25px;
+    margin: 0;
+    color: #343a40;
+}
+
+/* form style */
+#formdiv {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f9f9f9;
+    padding: 10px 20px;
+    border-radius: 5px;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+    margin-bottom: 15px;
+    border-bottom: 2px solid #acacac;
+    margin-top: 15px;
+}
+
+#formdiv h2 {
+    font-size: 25px;
+    margin: 0;
+    color: #343a40;
+    margin-right: 10px;
+    margin-left: 10px;
+    margin-bottom: 20px;
+    font-weight: bold;
+    margin-top: 5px;
+    text-decoration: underline;
+}
+
+#formdiv form {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#formdiv label {
+    font-size: 16px;
+    margin-right: 2px;
+    margin-left: 2px;
+    margin-bottom: 20px;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+#formdiv input {
+    padding: 10px;
+    font-size: 16px;
+}
+
+.input-group {
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+    border: 1px solid #a0a0a0;
+    border-radius: 4px;
+    width: 100%;
+}
+
+#formdiv button {
+    padding: 10px 20px;
+    background-color: #2466eb;
+    font-weight: bold;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#formdiv button:hover {
+    background-color: #0d3dc2;
+}
+
+#formdiv input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+/* table style */
+#table {
+    width: 100%;
+    border-collapse: collapse;
+}
+#table h2{
+    font-size: 25px;
+    margin: 0;
+    color: #343a40;
+    margin-right: 10px;
+    margin-left: 10px;
+    margin-bottom: 20px;
+    font-weight: bold;
+    margin-top: 5px;
+    text-decoration: underline;
+}
+
+#table tbody {
+    display: block;
+    height: 400px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+#table thead,
+#table tbody tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}
+
+#table th,
+#table td {
+    text-align: center;
+    vertical-align: middle;
+    padding: 8px;
+}
+
+#table th {
+    background-color: #007bff;
+    color: white;
+}
+
+#table tbody tr:nth-of-type(odd) {
+    background-color: rgba(0, 123, 255, 0.1);
+}
+
+#table tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.323);
+}
+/* Search style */
+#search{
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    font-size: 16px;
+    font-family: Arial, sans-serif;
+}
+#search h2{
+    font-size: 25px;
+    margin: 0;
+    color: #343a40;
+    margin-right: 10px;
+    margin-left: 10px;
+    margin-bottom: 20px;
+    font-weight: bold;
+    margin-top: 5px;
+    text-decoration: underline;
+}

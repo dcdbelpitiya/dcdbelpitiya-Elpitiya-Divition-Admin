@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elpitiya Divitions Login Page</title>
+    <link rel="icon" href="logo.jpg" type="image/png">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+
+
+    <script>
+        
+        function validateForm(event) {
+            event.preventDefault();
+
+            const username = document.getElementById('Username').value;
+            const password = document.getElementById('password').value;
+            const errorMessage = document.getElementById('error');
+            const susses = document.getElementById('susses');
+
+            errorMessage.textContent = '';
+            errorMessage.textContent = '';
+
+            const correctUsername = "Admin";
+            const correctPassword = "Admin@123";
+
+            if (username === '') {
+                errorMessage.textContent = 'Username field is required.';
+                document.getElementById('Username').focus();
+                return;
+            }
+
+            if (password === '') {
+                errorMessage.textContent = 'Password field is required.';
+                document.getElementById('password').focus();
+                return;
+            }
+
+            if (username === correctUsername && password === correctPassword) {
+                susses.textContent = 'Login successful!';
+                window.location.href = 'main.html';
+            } else {
+                alert('Invalid username or password!');
+            }
+        }
+
+    </script>
+</head>
+
+<body>
+
+    <div class="container">
+        <img src="logo.jpg" alt="Logo">
+        <h1>Elpitiya Divitions</h1>
+        <h2>Login Now</h2>
+        <form onsubmit="validateForm(event)">
+
+            <label for="Username" class="form-label">Username:</label>
+            <div class="input-group">
+                <span><i class="bi bi-person"></i></span>
+                <input type="text" id="Username" name="username">
+            </div>
+
+            <label for="password" class="form-label">Password:</label>
+            <div class="input-group">
+                <span><i class="bi bi-lock"></i></span>
+                <input type="password" id="password" name="password">
+            </div>
+
+            <p id="error"></p>
+            <p id="susses"></p>
+
+            <button type="submit" class="btn-primary">Login</button>
+            <button type="reset" class="btn-secondary">Reset</button>
+        </form>
+    </div>
+
+</body>
+
+</html>

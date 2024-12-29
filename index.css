@@ -1,0 +1,141 @@
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(to right, #e0f7fa, #80deea), url('your-image-url.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.container {
+    background-color: rgba(255, 255, 255, 0.95);
+    border: 2px solid #c1c7c8;
+    border-radius: 12px;
+    box-shadow: 0 6px 30px rgba(0, 0, 0, 0.2);
+    max-width: 400px;
+    padding: 40px;
+    width: 100%;
+    transition: transform 0.3s;
+}
+
+.container:hover {
+    transform: scale(1.02);
+}
+
+
+h1,
+h2,
+p {
+    color: #333;
+    margin: 0 0 20px;
+}
+
+.container img {
+    display: block;
+    margin: 0 auto;
+    width: 100px;
+}
+
+h1,
+h2 {
+    text-align: center;
+    color: #333;
+}
+
+h2 {
+    font-size: 20px;
+    margin-bottom: 20px;
+}
+
+.form-label {
+    font-size: 18px;
+    color: #555;
+}
+
+.input-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    border: 1px solid #207682;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.input-group span {
+    background-color: #5babb5;
+    padding: 10px;
+    color: #f5f5f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.input-group input {
+    border: none;
+    padding: 10px;
+    width: 100%;
+    outline: none;
+    border-radius: 0 4px 4px 0;
+}
+
+.input-group input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px;
+    width: 100%;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 20px;
+    margin-bottom: 10px;
+    transition: background-color 0.3s;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    transform: scale(1.02);
+    box-shadow: 0 6px 30px rgba(0, 0, 0, 0.2);
+}
+
+.btn-secondary {
+    background-color: #d14b1f;
+    color: white;
+    border: none;
+    padding: 10px;
+    width: 100%;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 20px;
+    transition: background-color 0.3s;
+}
+
+.btn-secondary:hover {
+    background-color: #980b0b;
+    transform: scale(1.02);
+    box-shadow: 0 6px 30px rgba(0, 0, 0, 0.2);
+}
+
+#error {
+    color: red;
+    text-align: center;
+    margin-bottom: 18px;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+#susses {
+    color: green;
+    text-align: center;
+    margin-bottom: 18px;
+    font-weight: bold;
+    font-size: 18px;
+}
